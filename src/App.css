@@ -681,6 +681,78 @@
   letter-spacing: 0.5px;
 }
 
+.toolbar-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.toolbar-btn--vision {
+  color: #5B6B8A;
+  border-color: #C8D4E8;
+}
+
+.toolbar-btn--vision:hover:not(:disabled) {
+  border-color: #5B6B8A;
+  color: #3A4A6A;
+  background: #EFF3FA;
+}
+
+.toolbar-btn--vision-active {
+  background: #EFF3FA;
+  border-color: #5B6B8A;
+  color: #3A4A6A;
+  font-weight: 800;
+}
+
+/* Vision legend strip */
+.vision-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(91,107,138,0.08);
+  border: 1.5px solid rgba(91,107,138,0.20);
+  border-radius: 10px;
+  margin-top: 2px;
+}
+
+.vision-legend-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3A4A6A;
+}
+
+.vision-legend-items {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.legend-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* Walking path */
+.legend-chip--free    { background: rgba(46,200,90,0.18);  color: #1A7A3A; }
+.legend-chip--blocked { background: rgba(220,60,60,0.15);  color: #A02020; }
+
+/* Light zones */
+.legend-chip--bright  { background: rgba(255,210,40,0.30); color: #806000; }
+.legend-chip--dim     { background: rgba(200,220,255,0.35); color: #3A5080; }
+.legend-chip--dark    { background: rgba(60,60,100,0.14);  color: #303060; }
+
+/* Crowding */
+.legend-chip--open    { background: rgba(46,200,140,0.18); color: #1A6A50; }
+.legend-chip--cozy    { background: rgba(255,180,60,0.22); color: #885000; }
+.legend-chip--crowded { background: rgba(220,60,60,0.15);  color: #A02020; }
+
 /* ════════════════════════════════════════════════
    ROOM GRID
    ════════════════════════════════════════════════ */
@@ -773,6 +845,34 @@
 .room-grid-wrapper--erase .grid-cell--occupied:hover {
   background: rgba(224,60,60,0.22) !important;
 }
+
+/* ── Vision overlay layer ────────────────────── */
+.overlay-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.overlay-cell {
+  transition: background 0.15s;
+}
+
+/* Walking path */
+.overlay-cell--free    { background: rgba(46,200,90,0.18);  }
+.overlay-cell--blocked { background: rgba(220,60,60,0.28);  }
+
+/* Light zones */
+.overlay-cell--bright  { background: rgba(255,215,0,0.38);  }
+.overlay-cell--dim     { background: rgba(160,180,220,0.28); }
+.overlay-cell--dark    { background: rgba(30,30,80,0.28);   }
+
+/* Crowding */
+.overlay-cell--open    { background: rgba(46,200,140,0.20); }
+.overlay-cell--cozy    { background: rgba(255,180,60,0.28); }
+.overlay-cell--crowded { background: rgba(220,60,60,0.30);  }
 
 /* ── Placed item overlays ────────────────────── */
 .placed-item {

@@ -54,6 +54,7 @@ export default function RoomGrid({
   canAffordSelected,
   rotated,
   eraseMode,
+  overlayData,
   onPlace,
   onRemove,
 }) {
@@ -140,6 +141,27 @@ export default function RoomGrid({
           );
         })}
       </div>
+
+      {/* Vision overlay — sits above grid cells, below placed items */}
+      {overlayData && (
+        <div
+          className="overlay-layer"
+          style={{
+            gridTemplateColumns: `repeat(${gridCols}, ${CELL}px)`,
+            gridTemplateRows: `repeat(${gridRows}, ${CELL}px)`,
+          }}
+        >
+          {cells.map(({ x, y }) => {
+            const level = overlayData.get(`${x},${y}`);
+            return (
+              <div
+                key={`${x},${y}`}
+                className={`overlay-cell overlay-cell--${level}`}
+              />
+            );
+          })}
+        </div>
+      )}
 
       {/* Placed item overlays — pointer-events: none keeps grid cells clickable */}
       {placedItems.map((placed) => {

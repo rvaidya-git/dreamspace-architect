@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ITEMS } from '../data/items';
+import { computeWalkOverlay, computeLightOverlay, computeCrowdOverlay } from '../utils/overlays';
 import BudgetTracker from './BudgetTracker';
 import ItemPalette from './ItemPalette';
 import RoomGrid from './RoomGrid';
@@ -15,6 +16,7 @@ export default function DesignRoom({
 }) {
   const [rotated, setRotated] = useState(false);
   const [eraseMode, setEraseMode] = useState(false);
+  const [activeOverlay, setActiveOverlay] = useState(null); // null | 'walk' | 'light' | 'crowd'
 
   // Reset rotation whenever the player picks a different item
   useEffect(() => {
@@ -31,6 +33,15 @@ export default function DesignRoom({
 
   const selectedItem = selectedItemId ? ITEMS[selectedItemId] : null;
   const canAffordSelected = selectedItem ? selectedItem.cost <= remaining : false;
+
+  // Compute the active overlay (memoized so it only recalculates when inputs change)
+  const overlayData = useMemo(() => {
+    const { gridCols, gridRows } = mission;
+    if (activeOverlay === 'walk')  return computeWalkOverlay(placedItems, gridCols, gridRows);
+    if (activeOverlay === 'light') return computeLightOverlay(placedItems, gridCols, gridRows);
+    if (activeOverlay === 'crowd') return computeCrowdOverlay(placedItems, gridCols, gridRows);
+    return null;
+  }, [activeOverlay, placedItems, mission]);
 
   // Effective dimensions after rotation
   const [bw, bh] = selectedItem ? selectedItem.size : [1, 1];
@@ -115,7 +126,64 @@ export default function DesignRoom({
                   <span className="toolbar-dims">{ew}×{eh}</span>
                 )}
               </button>
+
+              <div className="toolbar-sep" />
+
+              <button
+                className={`toolbar-btn toolbar-btn--vision${activeOverlay === 'walk' ? ' toolbar-btn--vision-active' : ''}`}
+                onClick={() => setActiveOverlay((v) => v === 'walk' ? null : 'walk')}
+                title="Show which areas you can walk through"
+              >
+                🚶 Walking Path
+              </button>
+
+              <button
+                className={`toolbar-btn toolbar-btn--vision${activeOverlay === 'light' ? ' toolbar-btn--vision-active' : ''}`}
+                onClick={() => setActiveOverlay((v) => v === 'light' ? null : 'light')}
+                title="Show how much light reaches each area"
+              >
+                ☀️ Light Zones
+              </button>
+
+              <button
+                className={`toolbar-btn toolbar-btn--vision${activeOverlay === 'crowd' ? ' toolbar-btn--vision-active' : ''}`}
+                onClick={() => setActiveOverlay((v) => v === 'crowd' ? null : 'crowd')}
+                title="Show which areas feel crowded or open"
+              >
+                📦 Crowding
+              </button>
             </div>
+
+            {/* Vision legend */}
+            {activeOverlay === 'walk' && (
+              <div className="vision-legend">
+                <div className="vision-legend-title">🚶 Walking Path — can people move around easily?</div>
+                <div className="vision-legend-items">
+                  <span className="legend-chip legend-chip--free">🟢 Free to walk</span>
+                  <span className="legend-chip legend-chip--blocked">🔴 Blocked by furniture</span>
+                </div>
+              </div>
+            )}
+            {activeOverlay === 'light' && (
+              <div className="vision-legend">
+                <div className="vision-legend-title">☀️ Light Zones — how bright is each spot?</div>
+                <div className="vision-legend-items">
+                  <span className="legend-chip legend-chip--bright">🌟 Bright</span>
+                  <span className="legend-chip legend-chip--dim">🌤️ Dim</span>
+                  <span className="legend-chip legend-chip--dark">🌑 Dark</span>
+                </div>
+              </div>
+            )}
+            {activeOverlay === 'crowd' && (
+              <div className="vision-legend">
+                <div className="vision-legend-title">📦 Crowding — does the room feel open or packed?</div>
+                <div className="vision-legend-items">
+                  <span className="legend-chip legend-chip--open">😌 Open &amp; airy</span>
+                  <span className="legend-chip legend-chip--cozy">🏠 Cozy</span>
+                  <span className="legend-chip legend-chip--crowded">😬 Crowded</span>
+                </div>
+              </div>
+            )}
 
             <RoomGrid
               mission={mission}
@@ -124,6 +192,7 @@ export default function DesignRoom({
               canAffordSelected={canAffordSelected}
               rotated={rotated}
               eraseMode={eraseMode}
+              overlayData={overlayData}
               onPlace={onPlace}
               onRemove={onRemove}
             />

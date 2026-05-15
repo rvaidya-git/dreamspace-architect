@@ -44,7 +44,7 @@ export default function ItemPalette({ selectedItemId, onSelect, budget }) {
                     disabled={!canAfford}
                     title={
                       !canAfford
-                        ? `Need $${item.cost} — not enough budget`
+                        ? `Can't afford this! It costs $${item.cost}`
                         : `${item.name} · $${item.cost} · ${item.size[0]}×${item.size[1]} tiles`
                     }
                   >
@@ -64,7 +64,7 @@ export default function ItemPalette({ selectedItemId, onSelect, budget }) {
 
       {selectedItemId && (
         <button className="btn-cancel" onClick={() => onSelect(null)}>
-          ✕ Cancel selection
+          ✕ Deselect
         </button>
       )}
     </div>

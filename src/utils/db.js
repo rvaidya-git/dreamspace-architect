@@ -111,6 +111,41 @@ export async function emailUsernameRecovery(email) {
   if (error) throw error;
 }
 
+// ─────────────────────────────────────────────────────────────
+// Leaderboard
+// ─────────────────────────────────────────────────────────────
+
+export async function getLeaderboard(limit = 50) {
+  const { data, error } = await supabase
+    .from('player_profiles')
+    .select('id, username_display, total_score')
+    .gt('total_score', 0)
+    .order('total_score', { ascending: false })
+    .order('username_normalized', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
+// Returns the logged-in user's rank and score when they fall outside the top list.
+export async function getUserRankAndScore(playerId) {
+  const { data: profile, error: pErr } = await supabase
+    .from('player_profiles')
+    .select('total_score')
+    .eq('id', playerId)
+    .single();
+  if (pErr || !profile || profile.total_score === 0) return null;
+
+  // Rank = number of players with a strictly higher score + 1
+  const { count, error: cErr } = await supabase
+    .from('player_profiles')
+    .select('*', { count: 'exact', head: true })
+    .gt('total_score', profile.total_score);
+  if (cErr) return null;
+
+  return { rank: count + 1, score: profile.total_score };
+}
+
 export async function loadProfile(playerId) {
   const { data, error } = await supabase
     .from('player_profiles')

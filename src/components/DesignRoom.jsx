@@ -13,8 +13,6 @@ export default function DesignRoom({
   onPlace,
   onRemove,
   onSubmit,
-  userProfile,
-  onProfile,
 }) {
   const [rotated, setRotated] = useState(false);
   const [eraseMode, setEraseMode] = useState(false);
@@ -60,11 +58,11 @@ export default function DesignRoom({
   // Hint text reacts to current mode
   let hint;
   if (eraseMode) {
-    hint = '🗑️ Erase mode: click any item in the room to remove it. Click "Done" when finished.';
+    hint = '🗑️ Click any item in the room to remove it!';
   } else if (!selectedItemId) {
     hint = 'Pick an item from the left, then click the room to place it.';
   } else if (!canAffordSelected) {
-    hint = `⚠️ Not enough budget for ${selectedItem.name} ($${selectedItem.cost}).`;
+    hint = `⚠️ Can't afford ${selectedItem.name} — it costs $${selectedItem.cost}.`;
   } else {
     hint = `Placing ${selectedItem.emoji} ${selectedItem.name} (${ew}×${eh}) — click the room to place it.`;
   }
@@ -83,11 +81,6 @@ export default function DesignRoom({
         <BudgetTracker spent={spent} total={mission.budget} />
 
         <div className="header-right">
-          {userProfile && (
-            <button className="btn-profile" onClick={onProfile} title="My Profile">
-              👤 {userProfile.username}
-            </button>
-          )}
           <button className="btn-primary btn-submit" onClick={onSubmit}>
             Submit Design ✓
           </button>

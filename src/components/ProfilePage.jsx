@@ -88,7 +88,7 @@ export default function ProfilePage({ profile, onBack, onSignOut }) {
             </button>
           ) : (
             <div className="confirm-delete">
-              <p>This will permanently delete your username <strong>{profile.username}</strong> and all your scores. This cannot be undone!</p>
+              <p>This will delete your username <strong>{profile.username}</strong> and all your scores forever. You can't undo this!</p>
               {deleteError && <p className="confirm-delete-error">{deleteError}</p>}
               <div className="confirm-delete-btns">
                 <button className="btn-secondary" onClick={() => setConfirmDelete(false)} disabled={deleting}>

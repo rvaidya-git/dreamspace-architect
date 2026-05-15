@@ -38,7 +38,7 @@ export default function StartScreen({ onStart }) {
 
         <div className="start-features">
           <span className="start-feature-pill">🎨 Place furniture</span>
-          <span className="start-feature-pill">💰 Manage budget</span>
+          <span className="start-feature-pill">💰 Spend your budget</span>
           <span className="start-feature-pill">⭐ Earn stars</span>
         </div>
 

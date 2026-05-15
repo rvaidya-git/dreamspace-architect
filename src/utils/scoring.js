@@ -53,7 +53,7 @@ export function scoreRoom(placedItems, mission) {
     goalsPraise = passedCount === 1
       ? `You got one of ${mission.client}'s wishes done — that's something!`
       : `${mission.client} had a wishlist — try reading it again before placing items!`;
-    goalsSuggestion = `Focus on the checklist first: make sure the most important items are in the room.`;
+    goalsSuggestion = `Try again and focus on the checklist — add everything ${mission.client} asked for!`;
   }
 
   breakdown.push({
@@ -81,7 +81,7 @@ export function scoreRoom(placedItems, mission) {
     budgetPraise = `💸 Great spending! You used ${Math.round(budgetRatio * 100)}% of the budget to fill the room nicely.`;
     budgetSuggestion = null;
   } else if (budgetRatio >= 0.3) {
-    budgetPraise = `You spent about ${Math.round(budgetRatio * 100)}% of your budget — a reasonable amount!`;
+    budgetPraise = `You spent about ${Math.round(budgetRatio * 100)}% of your budget — not bad!`;
     budgetSuggestion = `Try spending a bit more — ${mission.client} wants a well-furnished room, not an empty one!`;
   } else if (budgetRatio > 0) {
     budgetPraise = `You placed a few items, which is a start!`;

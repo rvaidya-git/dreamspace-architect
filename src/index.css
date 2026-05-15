@@ -1,29 +1,53 @@
 :root {
-  --bg:          #FFF8F0;
-  --surface:     #FFFFFF;
-  --border:      #E8D5C0;
-  --text:        #5A4A3A;
-  --text-h:      #2D1F0F;
-  --accent:      #E67E22;
-  --accent-dark: #CA6F1E;
-  --success:     #27AE60;
-  --danger:      #E74C3C;
-  --warning:     #F39C12;
+  /* Base */
+  --bg:           #FFF6EC;
+  --surface:      #FFFFFF;
+  --border:       #E2CBB0;
+  --border-dark:  #C9A87E;
+  --text:         #5C4433;
+  --text-h:       #2D1A09;
+  --text-muted:   #8B7260;
 
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Actions */
+  --accent:       #E8721A;
+  --accent-dark:  #C85E10;
+  --accent-glow:  rgba(232, 114, 26, 0.3);
+  --success:      #2EAA60;
+  --danger:       #E03C3C;
+  --warning:      #F0A020;
+
+  /* Category fill colors (used on placed items + palette) */
+  --c-sleep:   #A8D4F0;
+  --c-work:    #FFE566;
+  --c-light:   #FFD84F;
+  --c-plant:   #8DD5A0;
+  --c-comfort: #FFAA90;
+  --c-storage: #C8AAEE;
+  --c-window:  #80D8EE;
+
+  /* Category border/accent (darker) */
+  --cb-sleep:   #5AA0D0;
+  --cb-work:    #C8A020;
+  --cb-light:   #CC8800;
+  --cb-plant:   #40A060;
+  --cb-comfort: #D05840;
+  --cb-storage: #7850C0;
+  --cb-window:  #2890B8;
+
+  /* Shadows */
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.10);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.14);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.16);
+
+  font: 15px/1.55 'Segoe UI', system-ui, Roboto, sans-serif;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
-body {
-  margin: 0;
-  padding: 0;
-}
+body { margin: 0; padding: 0; }
 
 #root {
   min-height: 100vh;
@@ -31,14 +55,9 @@ body {
   flex-direction: column;
 }
 
-h1, h2, h3 {
-  margin: 0;
-  color: var(--text-h);
-}
-
-p {
-  margin: 0;
-}
+h1, h2, h3 { margin: 0; color: var(--text-h); }
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
 
 button {
   cursor: pointer;

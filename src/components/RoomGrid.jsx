@@ -4,13 +4,23 @@ import { ITEMS } from '../data/items';
 const CELL = 60; // px per grid cell
 
 const CATEGORY_COLOR = {
-  sleep:   '#B8D4E8',
-  work:    '#F0E6B3',
-  light:   '#FFF0A0',
-  plant:   '#C8E6C9',
-  comfort: '#FFD4D4',
-  storage: '#E1D4F0',
-  window:  '#B3E5FC',
+  sleep:   'var(--c-sleep)',
+  work:    'var(--c-work)',
+  light:   'var(--c-light)',
+  plant:   'var(--c-plant)',
+  comfort: 'var(--c-comfort)',
+  storage: 'var(--c-storage)',
+  window:  'var(--c-window)',
+};
+
+const CATEGORY_BORDER = {
+  sleep:   'var(--cb-sleep)',
+  work:    'var(--cb-work)',
+  light:   'var(--cb-light)',
+  plant:   'var(--cb-plant)',
+  comfort: 'var(--cb-comfort)',
+  storage: 'var(--cb-storage)',
+  window:  'var(--cb-window)',
 };
 
 function buildOccupancy(placedItems) {
@@ -26,6 +36,12 @@ function buildOccupancy(placedItems) {
   return map;
 }
 
+// Emoji size scales with the shorter dimension of the item's footprint
+function emojiSize(w, h) {
+  const shorter = Math.min(w, h);
+  return Math.round(shorter * CELL * 0.42);
+}
+
 export default function RoomGrid({
   mission,
   placedItems,
@@ -39,7 +55,7 @@ export default function RoomGrid({
 
   const occupancy = buildOccupancy(placedItems);
 
-  // Compute ghost preview when a cell is hovered with an item selected
+  // Ghost preview
   const previewCells = new Set();
   let previewValid = false;
   if (hoverCell && selectedItemId && canAffordSelected) {
@@ -69,7 +85,6 @@ export default function RoomGrid({
     if (uid) onRemove(uid);
   }
 
-  // Build flat list of cells to render
   const cells = [];
   for (let row = 0; row < gridRows; row++) {
     for (let col = 0; col < gridCols; col++) {
@@ -92,8 +107,10 @@ export default function RoomGrid({
       >
         {cells.map(({ x, y }) => {
           const key = `${x},${y}`;
+          const isOccupied = occupancy.has(key);
           const isPreview = previewCells.has(key);
           let cls = 'grid-cell';
+          if (isOccupied) cls += ' grid-cell--occupied';
           if (isPreview) cls += previewValid ? ' grid-cell--ok' : ' grid-cell--bad';
           return (
             <div
@@ -108,10 +125,11 @@ export default function RoomGrid({
         })}
       </div>
 
-      {/* Placed item overlays — pointer-events: none so grid cells stay clickable */}
+      {/* Placed item overlays — pointer-events: none keeps grid cells clickable */}
       {placedItems.map((placed) => {
         const item = ITEMS[placed.itemId];
         const [w, h] = item.size;
+        const showLabel = w * h > 1;
         return (
           <div
             key={placed.uid}
@@ -122,10 +140,18 @@ export default function RoomGrid({
               width: w * CELL,
               height: h * CELL,
               backgroundColor: CATEGORY_COLOR[item.category],
+              '--item-border-color': CATEGORY_BORDER[item.category],
             }}
           >
-            <span className="placed-item-emoji">{item.emoji}</span>
-            <span className="placed-item-label">{item.name}</span>
+            <span
+              className="placed-item-emoji"
+              style={{ fontSize: emojiSize(w, h) }}
+            >
+              {item.emoji}
+            </span>
+            {showLabel && (
+              <span className="placed-item-label">{item.name}</span>
+            )}
           </div>
         );
       })}

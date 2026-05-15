@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { ITEMS } from '../data/items';
 import BudgetTracker from './BudgetTracker';
 import ItemPalette from './ItemPalette';
@@ -12,22 +13,52 @@ export default function DesignRoom({
   onRemove,
   onSubmit,
 }) {
+  const [rotated, setRotated] = useState(false);
+  const [eraseMode, setEraseMode] = useState(false);
+
+  // Reset rotation whenever the player picks a different item
+  useEffect(() => {
+    setRotated(false);
+  }, [selectedItemId]);
+
+  // Exit erase mode whenever an item is selected from the palette
+  useEffect(() => {
+    if (selectedItemId) setEraseMode(false);
+  }, [selectedItemId]);
+
   const spent = placedItems.reduce((sum, p) => sum + ITEMS[p.itemId].cost, 0);
   const remaining = mission.budget - spent;
 
   const selectedItem = selectedItemId ? ITEMS[selectedItemId] : null;
   const canAffordSelected = selectedItem ? selectedItem.cost <= remaining : false;
 
-  const hint = !selectedItemId
-    ? 'Select an item from the left, then click the room to place it. Right-click to remove.'
-    : canAffordSelected
-    ? `Placing: ${selectedItem.emoji} ${selectedItem.name} (${selectedItem.size[0]}×${selectedItem.size[1]}) — click to place · right-click to remove`
-    : `⚠️ Not enough budget for ${selectedItem.name} ($${selectedItem.cost})`;
+  // Effective dimensions after rotation
+  const [bw, bh] = selectedItem ? selectedItem.size : [1, 1];
+  const [ew, eh] = rotated ? [bh, bw] : [bw, bh];
+  // Rotation only does something on rectangular (non-square) items
+  const canRotate = selectedItem != null && bw !== bh;
+
+  function toggleErase() {
+    const entering = !eraseMode;
+    if (entering) onSelectItem(null); // deselect any item before entering erase mode
+    setEraseMode(entering);
+  }
+
+  // Hint text reacts to current mode
+  let hint;
+  if (eraseMode) {
+    hint = '🗑️ Erase mode: click any item in the room to remove it. Click "Done" when finished.';
+  } else if (!selectedItemId) {
+    hint = 'Pick an item from the left, then click the room to place it.';
+  } else if (!canAffordSelected) {
+    hint = `⚠️ Not enough budget for ${selectedItem.name} ($${selectedItem.cost}).`;
+  } else {
+    hint = `Placing ${selectedItem.emoji} ${selectedItem.name} (${ew}×${eh}) — click the room to place it.`;
+  }
 
   return (
     <div className="design-room">
       <header className="design-header">
-        {/* Speech-bubble client brief */}
         <div className="client-bubble">
           <div className="client-avatar">{mission.clientEmoji}</div>
           <div className="client-speech">
@@ -56,11 +87,43 @@ export default function DesignRoom({
           <div className="grid-area">
             <div className="grid-label">{mission.title}</div>
             <div className="grid-hint">{hint}</div>
+
+            {/* Editing toolbar */}
+            <div className="edit-toolbar">
+              <button
+                className={`toolbar-btn${eraseMode ? ' toolbar-btn--erase' : ''}`}
+                onClick={toggleErase}
+                title="Click items in the room to remove them"
+              >
+                {eraseMode ? '✅ Done Erasing' : '🗑️ Erase Item'}
+              </button>
+
+              <button
+                className={`toolbar-btn${rotated ? ' toolbar-btn--active' : ''}`}
+                onClick={() => setRotated((r) => !r)}
+                disabled={!canRotate}
+                title={
+                  !selectedItem
+                    ? 'Select an item first to rotate it'
+                    : !canRotate
+                    ? 'Square items look the same when rotated'
+                    : `Rotate — currently ${ew}×${eh}`
+                }
+              >
+                🔄 Rotate
+                {canRotate && (
+                  <span className="toolbar-dims">{ew}×{eh}</span>
+                )}
+              </button>
+            </div>
+
             <RoomGrid
               mission={mission}
               placedItems={placedItems}
               selectedItemId={selectedItemId}
               canAffordSelected={canAffordSelected}
+              rotated={rotated}
+              eraseMode={eraseMode}
               onPlace={onPlace}
               onRemove={onRemove}
             />

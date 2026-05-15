@@ -31,12 +31,12 @@ export default function App() {
     setGamePhase('design');
   }
 
-  function handlePlace(itemId, x, y) {
+  function handlePlace(itemId, x, y, rotated) {
     if (!mission) return;
     const item = ITEMS[itemId];
     const spent = placedItems.reduce((s, p) => s + ITEMS[p.itemId].cost, 0);
     if (spent + item.cost > mission.budget) return;
-    setPlacedItems((prev) => [...prev, { uid: makeUid(), itemId, x, y }]);
+    setPlacedItems((prev) => [...prev, { uid: makeUid(), itemId, x, y, rotated: !!rotated }]);
   }
 
   function handleRemove(uid) {

@@ -23,10 +23,16 @@ const CATEGORY_BORDER = {
   window:  'var(--cb-window)',
 };
 
+// Returns the effective [width, height] of a placed item, respecting rotation.
+function effectiveSize(placed) {
+  const [w, h] = ITEMS[placed.itemId].size;
+  return placed.rotated ? [h, w] : [w, h];
+}
+
 function buildOccupancy(placedItems) {
   const map = new Map(); // "x,y" -> uid
   for (const placed of placedItems) {
-    const [w, h] = ITEMS[placed.itemId].size;
+    const [w, h] = effectiveSize(placed);
     for (let dy = 0; dy < h; dy++) {
       for (let dx = 0; dx < w; dx++) {
         map.set(`${placed.x + dx},${placed.y + dy}`, placed.uid);
@@ -36,10 +42,9 @@ function buildOccupancy(placedItems) {
   return map;
 }
 
-// Emoji size scales with the shorter dimension of the item's footprint
+// Emoji font size scales with the shorter dimension of the item's footprint.
 function emojiSize(w, h) {
-  const shorter = Math.min(w, h);
-  return Math.round(shorter * CELL * 0.42);
+  return Math.round(Math.min(w, h) * CELL * 0.42);
 }
 
 export default function RoomGrid({
@@ -47,6 +52,8 @@ export default function RoomGrid({
   placedItems,
   selectedItemId,
   canAffordSelected,
+  rotated,
+  eraseMode,
   onPlace,
   onRemove,
 }) {
@@ -55,11 +62,12 @@ export default function RoomGrid({
 
   const occupancy = buildOccupancy(placedItems);
 
-  // Ghost preview
+  // Ghost preview — only shown when placing (not erasing)
   const previewCells = new Set();
   let previewValid = false;
-  if (hoverCell && selectedItemId && canAffordSelected) {
-    const [w, h] = ITEMS[selectedItemId].size;
+  if (hoverCell && selectedItemId && canAffordSelected && !eraseMode) {
+    const [bw, bh] = ITEMS[selectedItemId].size;
+    const [w, h] = rotated ? [bh, bw] : [bw, bh];
     const { x, y } = hoverCell;
     previewValid = true;
     for (let dy = 0; dy < h; dy++) {
@@ -75,10 +83,16 @@ export default function RoomGrid({
   }
 
   function handleCellClick(x, y) {
+    if (eraseMode) {
+      const uid = occupancy.get(`${x},${y}`);
+      if (uid) onRemove(uid);
+      return;
+    }
     if (!selectedItemId || !canAffordSelected || !previewValid) return;
-    onPlace(selectedItemId, x, y);
+    onPlace(selectedItemId, x, y, rotated);
   }
 
+  // Right-click always removes, regardless of mode
   function handleRightClick(e, x, y) {
     e.preventDefault();
     const uid = occupancy.get(`${x},${y}`);
@@ -92,9 +106,11 @@ export default function RoomGrid({
     }
   }
 
+  const wrapperClass = `room-grid-wrapper${eraseMode ? ' room-grid-wrapper--erase' : ''}`;
+
   return (
     <div
-      className="room-grid-wrapper"
+      className={wrapperClass}
       style={{ width: gridCols * CELL, height: gridRows * CELL }}
     >
       {/* Clickable background cells */}
@@ -128,7 +144,7 @@ export default function RoomGrid({
       {/* Placed item overlays — pointer-events: none keeps grid cells clickable */}
       {placedItems.map((placed) => {
         const item = ITEMS[placed.itemId];
-        const [w, h] = item.size;
+        const [w, h] = effectiveSize(placed);
         const showLabel = w * h > 1;
         return (
           <div

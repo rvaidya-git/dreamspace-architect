@@ -626,6 +626,62 @@
 .budget-total { color: var(--text-muted); font-size: 12px; }
 
 /* ════════════════════════════════════════════════
+   EDITING TOOLBAR
+   ════════════════════════════════════════════════ */
+.edit-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #FFF5EE;
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+
+.toolbar-btn--active {
+  background: #FFF0E0;
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.toolbar-btn--erase {
+  background: #FFECEC;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.toolbar-dims {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0,0,0,0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* ════════════════════════════════════════════════
    ROOM GRID
    ════════════════════════════════════════════════ */
 .room-grid-wrapper {
@@ -707,6 +763,15 @@
 .grid-cell--bad {
   background: rgba(224,60,60,0.22) !important;
   border-color: rgba(224,60,60,0.45) !important;
+}
+
+/* Erase mode: occupied cells become clickable targets */
+.room-grid-wrapper--erase .grid-cell--occupied {
+  cursor: pointer;
+}
+
+.room-grid-wrapper--erase .grid-cell--occupied:hover {
+  background: rgba(224,60,60,0.22) !important;
 }
 
 /* ── Placed item overlays ────────────────────── */

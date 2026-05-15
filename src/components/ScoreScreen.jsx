@@ -1,12 +1,11 @@
-const STAR_LABEL = { 1: 'Nice Try! 🌱', 2: 'Good Job! 🎉', 3: 'Amazing! 🏆' };
+const STAR_LABEL   = { 1: 'Nice Try! 🌱', 2: 'Good Job! 🎉', 3: 'Amazing! 🏆' };
 const STAR_DISPLAY = { 1: '⭐', 2: '⭐⭐', 3: '⭐⭐⭐' };
 
-// Each scoring category gets its own bar color
 const CAT_COLOR = {
   'Mission Goals': '#E8721A',
-  'Budget Sense':  '#2EAA60',
-  'Walking Path':  '#3498DB',
-  'Natural Light': '#E8C020',
+  'Budget':        '#2EAA60',
+  'Walking Space': '#3498DB',
+  'Lighting':      '#E8C020',
   'Coziness':      '#D45090',
 };
 
@@ -24,6 +23,8 @@ export default function ScoreScreen({ score, onPlayAgain }) {
           {breakdown.map((cat) => {
             const barColor = CAT_COLOR[cat.label] ?? 'var(--accent)';
             const pct = cat.max > 0 ? (cat.earned / cat.max) * 100 : 0;
+            const isFull = cat.earned >= cat.max;
+
             return (
               <div key={cat.label} className="score-category">
                 <div className="score-cat-header">
@@ -53,7 +54,16 @@ export default function ScoreScreen({ score, onPlayAgain }) {
                   </ul>
                 )}
 
-                <p className="score-tip">{cat.tip}</p>
+                {cat.praise && (
+                  <p className={`score-praise${isFull ? ' score-praise--full' : ''}`}>
+                    {cat.praise}
+                  </p>
+                )}
+                {cat.suggestion && !isFull && (
+                  <p className="score-suggestion">
+                    💡 {cat.suggestion}
+                  </p>
+                )}
               </div>
             );
           })}

@@ -43,7 +43,7 @@ export default function StartScreen({ onStart }) {
         </div>
 
         <button className="btn-primary" onClick={onStart}>
-          Start Mission! 🚀
+          Choose a Mission! 🗺️
         </button>
       </div>
     </div>

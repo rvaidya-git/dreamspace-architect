@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { MISSIONS } from './data/missions';
 import { ITEMS } from './data/items';
 import { scoreRoom } from './utils/scoring';
 import StartScreen from './components/StartScreen';
+import MissionSelect from './components/MissionSelect';
 import DesignRoom from './components/DesignRoom';
 import ScoreScreen from './components/ScoreScreen';
 import './App.css';
@@ -12,15 +12,19 @@ function makeUid() {
   return String(uidCounter++);
 }
 
-const mission = MISSIONS[0];
-
 export default function App() {
-  const [gamePhase, setGamePhase] = useState('start'); // 'start' | 'design' | 'score'
+  const [gamePhase, setGamePhase] = useState('start'); // 'start' | 'pick' | 'design' | 'score'
+  const [mission, setMission] = useState(null);
   const [placedItems, setPlacedItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [score, setScore] = useState(null);
 
-  function handleStart() {
+  function handleGoToPick() {
+    setGamePhase('pick');
+  }
+
+  function handlePickMission(m) {
+    setMission(m);
     setPlacedItems([]);
     setSelectedItemId(null);
     setScore(null);
@@ -28,9 +32,10 @@ export default function App() {
   }
 
   function handlePlace(itemId, x, y) {
+    if (!mission) return;
     const item = ITEMS[itemId];
     const spent = placedItems.reduce((s, p) => s + ITEMS[p.itemId].cost, 0);
-    if (spent + item.cost > mission.budget) return; // safety guard
+    if (spent + item.cost > mission.budget) return;
     setPlacedItems((prev) => [...prev, { uid: makeUid(), itemId, x, y }]);
   }
 
@@ -43,11 +48,28 @@ export default function App() {
     setGamePhase('score');
   }
 
+  // Replay the same mission from scratch
+  function handlePlayAgain() {
+    setPlacedItems([]);
+    setSelectedItemId(null);
+    setScore(null);
+    setGamePhase('design');
+  }
+
+  // Go back to mission picker
+  function handleChangeMission() {
+    setGamePhase('pick');
+  }
+
   return (
     <div className="app">
-      {gamePhase === 'start' && <StartScreen onStart={handleStart} />}
+      {gamePhase === 'start' && <StartScreen onStart={handleGoToPick} />}
 
-      {gamePhase === 'design' && (
+      {gamePhase === 'pick' && (
+        <MissionSelect onPick={handlePickMission} onBack={() => setGamePhase('start')} />
+      )}
+
+      {gamePhase === 'design' && mission && (
         <DesignRoom
           mission={mission}
           placedItems={placedItems}
@@ -60,7 +82,11 @@ export default function App() {
       )}
 
       {gamePhase === 'score' && score && (
-        <ScoreScreen score={score} onPlayAgain={handleStart} />
+        <ScoreScreen
+          score={score}
+          onPlayAgain={handlePlayAgain}
+          onChangeMission={handleChangeMission}
+        />
       )}
     </div>
   );

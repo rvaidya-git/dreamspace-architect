@@ -1,31 +1,128 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ITEMS } from './data/items';
+import { MISSIONS } from './data/missions';
 import { scoreRoom } from './utils/scoring';
+import * as db from './utils/db';
+import AuthScreen from './components/AuthScreen';
+import ResumeScreen from './components/ResumeScreen';
 import StartScreen from './components/StartScreen';
 import MissionSelect from './components/MissionSelect';
 import DesignRoom from './components/DesignRoom';
 import ScoreScreen from './components/ScoreScreen';
+import ProfilePage from './components/ProfilePage';
 import './App.css';
 
 let uidCounter = 1;
-function makeUid() {
-  return String(uidCounter++);
-}
+function makeUid() { return String(uidCounter++); }
 
 export default function App() {
-  const [gamePhase, setGamePhase] = useState('start'); // 'start' | 'pick' | 'design' | 'score'
+  // ── Auth state ────────────────────────────────────
+  const [userProfile, setUserProfile] = useState(null);   // { id, username } | null
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  // ── Game state ────────────────────────────────────
+  const [gamePhase, setGamePhase] = useState('loading'); // see phases below
   const [mission, setMission] = useState(null);
   const [placedItems, setPlacedItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [score, setScore] = useState(null);
+  const [inProgressMissions, setInProgressMissions] = useState([]); // for resume screen
 
-  function handleGoToPick() {
-    setGamePhase('pick');
+  // Remembers which phase to return to when leaving the profile page
+  const phaseBeforeProfile = useRef(null);
+  // Debounce timer for background progress saves
+  const saveTimer = useRef(null);
+
+  // ── Auth initialization ───────────────────────────
+  // Phases: 'loading' → 'auth' | 'start' → 'pick' → 'design' → 'score'
+  //         any design/score phase can detour to 'profile'
+  useEffect(() => {
+    async function init() {
+      const playerId = db.getStoredPlayerId();
+      if (!playerId) {
+        setGamePhase('auth');
+        return;
+      }
+      try {
+        const profile = await db.loadProfile(playerId);
+        if (!profile) {
+          db.clearStoredPlayerId();
+          setGamePhase('auth');
+          return;
+        }
+        setUserProfile(profile);
+        setIsAnonymous(false);
+        const progressList = (await db.loadAllProgress(profile.id))
+          .filter(p => p.placed_items?.length > 0);
+        if (progressList.length > 0) {
+          setInProgressMissions(progressList);
+          setGamePhase('resume');
+        } else {
+          setGamePhase('start');
+        }
+      } catch {
+        setGamePhase('auth');
+      }
+    }
+    init();
+  }, []);
+
+  // ── Post-auth routing ─────────────────────────────
+  async function handleAuthenticated(profile) {
+    setUserProfile(profile);
+    setIsAnonymous(false);
+    try {
+      const progressList = (await db.loadAllProgress(profile.id))
+        .filter(p => p.placed_items?.length > 0);
+      if (progressList.length > 0) {
+        setInProgressMissions(progressList);
+        setGamePhase('resume');
+      } else {
+        setGamePhase('start');
+      }
+    } catch {
+      setGamePhase('start');
+    }
   }
 
-  function handlePickMission(m) {
+  // ── Progress save helpers ─────────────────────────
+  function scheduleSave(missionId, items) {
+    if (isAnonymous || !userProfile) return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      db.saveProgress(userProfile.id, missionId, items);
+    }, 400);
+  }
+
+  // ── Game handlers ─────────────────────────────────
+
+  // Called from ResumeScreen when the user clicks Resume on a specific mission.
+  function handleResumeMission(missionId, savedItems) {
+    const m = MISSIONS.find(ms => ms.id === missionId);
+    if (!m) return;
     setMission(m);
-    setPlacedItems([]);
+    setPlacedItems(savedItems.map(item => ({ ...item, uid: makeUid() })));
+    setSelectedItemId(null);
+    setScore(null);
+    setGamePhase('design');
+  }
+
+  async function handlePickMission(m) {
+    let initial = [];
+
+    if (!isAnonymous && userProfile) {
+      try {
+        const saved = await db.loadProgress(userProfile.id, m.id);
+        if (saved && saved.length > 0) {
+          initial = saved.map(item => ({ ...item, uid: makeUid() }));
+        }
+      } catch {
+        // Failed to load progress — start fresh
+      }
+    }
+
+    setMission(m);
+    setPlacedItems(initial);
     setSelectedItemId(null);
     setScore(null);
     setGamePhase('design');
@@ -36,19 +133,31 @@ export default function App() {
     const item = ITEMS[itemId];
     const spent = placedItems.reduce((s, p) => s + ITEMS[p.itemId].cost, 0);
     if (spent + item.cost > mission.budget) return;
-    setPlacedItems((prev) => [...prev, { uid: makeUid(), itemId, x, y, rotated: !!rotated }]);
+    const next = [...placedItems, { uid: makeUid(), itemId, x, y, rotated: !!rotated }];
+    setPlacedItems(next);
+    scheduleSave(mission.id, next);
   }
 
   function handleRemove(uid) {
-    setPlacedItems((prev) => prev.filter((p) => p.uid !== uid));
+    const next = placedItems.filter(p => p.uid !== uid);
+    setPlacedItems(next);
+    scheduleSave(mission.id, next);
   }
 
-  function handleSubmit() {
-    setScore(scoreRoom(placedItems, mission));
+  async function handleSubmit() {
+    const computed = scoreRoom(placedItems, mission);
+    setScore(computed);
     setGamePhase('score');
+
+    if (!isAnonymous && userProfile) {
+      try {
+        await db.submitMission(userProfile.id, mission.id, computed.total);
+      } catch (e) {
+        console.error('Score save failed:', e.message);
+      }
+    }
   }
 
-  // Replay the same mission from scratch
   function handlePlayAgain() {
     setPlacedItems([]);
     setSelectedItemId(null);
@@ -56,17 +165,65 @@ export default function App() {
     setGamePhase('design');
   }
 
-  // Go back to mission picker
   function handleChangeMission() {
+    setMission(null);
     setGamePhase('pick');
   }
 
+  function handleGoToProfile() {
+    phaseBeforeProfile.current = gamePhase;
+    setGamePhase('profile');
+  }
+
+  function handleBackFromProfile() {
+    setGamePhase(phaseBeforeProfile.current || 'pick');
+  }
+
+  function handleSignOut() {
+    db.signOut();
+    setUserProfile(null);
+    setIsAnonymous(false);
+    setMission(null);
+    setPlacedItems([]);
+    setScore(null);
+    setGamePhase('auth');
+  }
+
+  // ── Render ────────────────────────────────────────
   return (
     <div className="app">
-      {gamePhase === 'start' && <StartScreen onStart={handleGoToPick} />}
+      {gamePhase === 'loading' && (
+        <div className="app-loading">
+          <span className="app-loading-emoji">🏗️</span>
+          <p className="app-loading-text">Loading…</p>
+        </div>
+      )}
+
+      {gamePhase === 'auth' && (
+        <AuthScreen
+          onAnonymous={() => { setIsAnonymous(true); setGamePhase('start'); }}
+          onProfileCreated={handleAuthenticated}
+          onLogin={handleAuthenticated}
+        />
+      )}
+
+      {gamePhase === 'resume' && (
+        <ResumeScreen
+          progressList={inProgressMissions}
+          onResume={handleResumeMission}
+          onBrowse={() => setGamePhase('pick')}
+        />
+      )}
+
+      {gamePhase === 'start' && (
+        <StartScreen onStart={() => setGamePhase('pick')} />
+      )}
 
       {gamePhase === 'pick' && (
-        <MissionSelect onPick={handlePickMission} onBack={() => setGamePhase('start')} />
+        <MissionSelect
+          onPick={handlePickMission}
+          onBack={() => setGamePhase('start')}
+        />
       )}
 
       {gamePhase === 'design' && mission && (
@@ -78,6 +235,8 @@ export default function App() {
           onPlace={handlePlace}
           onRemove={handleRemove}
           onSubmit={handleSubmit}
+          userProfile={userProfile}
+          onProfile={handleGoToProfile}
         />
       )}
 
@@ -86,6 +245,16 @@ export default function App() {
           score={score}
           onPlayAgain={handlePlayAgain}
           onChangeMission={handleChangeMission}
+          userProfile={userProfile}
+          onProfile={handleGoToProfile}
+        />
+      )}
+
+      {gamePhase === 'profile' && userProfile && (
+        <ProfilePage
+          profile={userProfile}
+          onBack={handleBackFromProfile}
+          onSignOut={handleSignOut}
         />
       )}
     </div>

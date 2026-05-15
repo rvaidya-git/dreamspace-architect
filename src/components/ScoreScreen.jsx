@@ -9,7 +9,7 @@ const CAT_COLOR = {
   'Coziness':      '#D45090',
 };
 
-export default function ScoreScreen({ score, onPlayAgain, onChangeMission }) {
+export default function ScoreScreen({ score, onPlayAgain, onChangeMission, userProfile, onProfile }) {
   const { total, stars, breakdown } = score;
 
   return (
@@ -76,6 +76,11 @@ export default function ScoreScreen({ score, onPlayAgain, onChangeMission }) {
           <button className="btn-secondary" onClick={onChangeMission}>
             🗺️ Try Another Mission
           </button>
+          {userProfile && (
+            <button className="btn-ghost" onClick={onProfile}>
+              👤 My Profile
+            </button>
+          )}
         </div>
       </div>
     </div>

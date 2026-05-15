@@ -13,6 +13,8 @@ export default function DesignRoom({
   onPlace,
   onRemove,
   onSubmit,
+  userProfile,
+  onProfile,
 }) {
   const [rotated, setRotated] = useState(false);
   const [eraseMode, setEraseMode] = useState(false);
@@ -80,9 +82,16 @@ export default function DesignRoom({
 
         <BudgetTracker spent={spent} total={mission.budget} />
 
-        <button className="btn-primary btn-submit" onClick={onSubmit}>
-          Submit Design ✓
-        </button>
+        <div className="header-right">
+          {userProfile && (
+            <button className="btn-profile" onClick={onProfile} title="My Profile">
+              👤 {userProfile.username}
+            </button>
+          )}
+          <button className="btn-primary btn-submit" onClick={onSubmit}>
+            Submit Design ✓
+          </button>
+        </div>
       </header>
 
       <div className="design-body">

@@ -119,7 +119,6 @@ export async function getLeaderboard(limit = 50) {
   const { data, error } = await supabase
     .from('player_profiles')
     .select('id, username_display, total_score')
-    .gt('total_score', 0)
     .order('total_score', { ascending: false })
     .order('username_normalized', { ascending: true })
     .limit(limit);
@@ -134,7 +133,7 @@ export async function getUserRankAndScore(playerId) {
     .select('total_score')
     .eq('id', playerId)
     .single();
-  if (pErr || !profile || profile.total_score === 0) return null;
+  if (pErr || !profile) return null;
 
   // Rank = number of players with a strictly higher score + 1
   const { count, error: cErr } = await supabase

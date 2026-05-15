@@ -1982,6 +1982,8 @@
 .gh-profile            { color: var(--accent); }
 .gh-profile:hover      { background: #EEF2FF; color: var(--accent); }
 .gh-signout:hover      { background: #FFF0F0; color: var(--danger); }
+.gh-signup             { color: var(--accent); font-weight: 800; }
+.gh-signup:hover       { background: #EEF2FF; color: var(--accent); }
 
 /* ════════════════════════════════════════════════
    MODAL (anonymous home warning)
@@ -2015,4 +2017,155 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE — tablet (≤768px)
+   ════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .mission-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    padding: 12px 20px 40px;
+  }
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE — phone (≤480px)
+   ════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* ── Global header ── */
+  .gh-btn {
+    font-size: 12px;
+    padding: 5px 7px;
+  }
+  .gh-profile {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Card screen outer padding ── */
+  .auth-screen,
+  .resume-screen,
+  .score-screen,
+  .profile-screen {
+    padding: 12px;
+  }
+  .leaderboard-screen {
+    padding: 12px 12px 40px;
+  }
+
+  /* ── Card inner padding ── */
+  .auth-card {
+    padding: 28px 18px;
+    border-radius: 18px;
+  }
+  .score-card {
+    padding: 24px 16px;
+    border-radius: 18px;
+  }
+  .profile-card {
+    padding: 24px 16px;
+    border-radius: 18px;
+  }
+  .resume-card {
+    padding: 28px 18px;
+    border-radius: 18px;
+  }
+
+  /* ── Auth screen ── */
+  .auth-btn-row {
+    flex-direction: column;
+  }
+  .auth-option-btn {
+    font-size: 14px;
+    padding: 13px 16px;
+  }
+  .auth-title {
+    font-size: 22px;
+  }
+
+  /* ── Start screen ── */
+  .start-card {
+    padding: 32px 20px;
+  }
+  .start-title {
+    font-size: 30px;
+  }
+
+  /* ── Mission select ── */
+  .mission-select-header {
+    padding: 28px 16px 12px;
+  }
+  .mission-select-title {
+    font-size: 24px;
+  }
+  .mission-select-sub {
+    font-size: 13px;
+  }
+  .mission-grid {
+    grid-template-columns: 1fr;
+    padding: 10px 14px 40px;
+  }
+
+  /* ── Score screen ── */
+  .score-stars {
+    font-size: 44px;
+  }
+  .score-title {
+    font-size: 22px;
+  }
+  .score-total {
+    font-size: 14px;
+  }
+
+  /* ── Leaderboard ── */
+  .leaderboard-header {
+    padding: 56px 16px 24px;
+  }
+  .leaderboard-trophy {
+    font-size: 44px;
+  }
+  .leaderboard-title {
+    font-size: 22px;
+  }
+  .lb-row {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .lb-rank-cell {
+    width: 36px;
+  }
+  .lb-username {
+    font-size: 14px;
+  }
+  .lb-score {
+    font-size: 13px;
+  }
+
+  /* ── Profile ── */
+  .profile-username {
+    font-size: 20px;
+  }
+  .profile-avatar {
+    font-size: 40px;
+  }
+
+  /* ── Resume screen ── */
+  .resume-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .resume-resume-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Modal ── */
+  .modal-card {
+    padding: 28px 20px 22px;
+  }
 }

@@ -126,6 +126,15 @@ export default function App() {
     setGamePhase(phaseBeforeLeaderboard.current || 'start');
   }
 
+  function handleGoToAuth() {
+    setIsAnonymous(false);
+    setMission(null);
+    setPlacedItems([]);
+    setScore(null);
+    setSelectedItemId(null);
+    setGamePhase('auth');
+  }
+
   function handleSignOut() {
     db.signOut();
     setUserProfile(null);
@@ -219,6 +228,7 @@ export default function App() {
           onLeaderboard={handleGoToLeaderboard}
           onProfile={handleGoToProfile}
           onSignOut={handleSignOut}
+          onGoToAuth={handleGoToAuth}
         />
       )}
 

@@ -255,6 +255,10 @@ export default function App() {
           onAnonymous={() => { setIsAnonymous(true); setGamePhase('start'); }}
           onProfileCreated={handleAuthenticated}
           onLogin={handleAuthenticated}
+          onLeaderboard={() => {
+            phaseBeforeLeaderboard.current = 'auth';
+            setGamePhase('leaderboard');
+          }}
         />
       )}
 

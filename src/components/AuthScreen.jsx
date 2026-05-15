@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import * as db from '../utils/db';
 
-export default function AuthScreen({ onAnonymous, onProfileCreated, onLogin }) {
+export default function AuthScreen({ onAnonymous, onProfileCreated, onLogin, onLeaderboard }) {
   const [mode, setMode] = useState('home'); // 'home' | 'create' | 'login' | 'forgot'
 
   // Create form
@@ -150,6 +150,9 @@ export default function AuthScreen({ onAnonymous, onProfileCreated, onLogin }) {
               <span className="auth-option-desc">Play now — no saving</span>
             </button>
           </div>
+          <button className="auth-leaderboard-link" onClick={onLeaderboard}>
+            🏆 See the leaderboard
+          </button>
         </div>
       </div>
     );
